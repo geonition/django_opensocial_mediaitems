@@ -56,6 +56,8 @@ class mediaItemsTest(TestCase):
                             "mediaitem-id",
                             status_code=201)
         
+        print response
+        
         
     
     def tearDown(self):

@@ -1,6 +1,7 @@
 from geonition_utils.HttpResponseExtenders import HttpResponseNotImplemented
 from geonition_utils.HttpResponseExtenders import HttpResponseCreated
 from geonition_utils.HttpResponseExtenders import HttpResponseUnauthorized
+from django.core.urlresolvers import reverse
 from models import MediaItem
 
 import json
@@ -20,7 +21,10 @@ def media_items(request, *args, **kwargs):
             mediaitem.save()
             
             return HttpResponseCreated(json.dumps({"msg": "The file was uploaded and saved",
-                                                    "mediaitem-id": mediaitem.id}))
+                                                    "mediaitem-id": mediaitem.id,
+                                                    "location": "%s/%s/@self/@all/%s" % (reverse('mediaItems'),
+                                                                                                    request.user,
+                                                                                                    mediaitem.id)}))
         else:
             return HttpResponseUnauthorized("To save files you have to sign in first")
         
