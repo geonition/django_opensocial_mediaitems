@@ -3,6 +3,7 @@ from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
+import os
 
 
 class mediaItemsTest(TestCase):
@@ -35,4 +36,33 @@ class mediaItemsTest(TestCase):
         
         url = "%s%s" % (base_url, "/@me/@self/@all/pic_home")
         self.client.get(url)
+        
+    def test_create_mediaitem(self):
+        self.client.login(username='user1',
+                          password='user1')
+        
+        base_url = reverse('mediaItems')
+        
+        root = os.path.dirname(__file__)
+        
+        f = open("%s%s" % (root, '/tests/test_pic.JPG'), 'rb')
+        
+        response = self.client.post("%s%s" % (base_url, "/user1/@self/@all"),
+                                    {'mediaitem': f})
+        f.close()
+        
+        #response 201 created location, mediaitem-id
+        self.assertContains(response,
+                            "mediaitem-id",
+                            status_code=201)
+        
+        
+    
+    def tearDown(self):
+        
+        self.user1.delete()
+        self.user2.delete()
+        self.user3.delete()
+        self.user4.delete()
+        self.group1.delete()
         
