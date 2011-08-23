@@ -3,8 +3,9 @@ from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
+from models import MediaItem
 import os
-
+import json
 
 class mediaItemsTest(TestCase):
     
@@ -17,6 +18,22 @@ class mediaItemsTest(TestCase):
         
         self.group1 = Group(name='@family')
         self.group1.save()
+        
+        #create some media items
+        root = os.path.dirname(__file__)
+        f = open("%s%s" % (root, '/tests/test_pic.JPG'), 'rb')
+        f.close()
+        
+        mi1 = MediaItem(owner_id=self.user1,
+                        media_file='./tests/test_pic.JPG').save()
+        mi2 = MediaItem(owner_id=self.user1,
+                        media_file='./tests/test_pic.JPG').save()
+        mi3 = MediaItem(owner_id=self.user2,
+                        media_file='./tests/test_pic.JPG').save()
+        mi4 = MediaItem(owner_id=self.user3,
+                        media_file='./tests/test_pic.JPG').save()
+        mi5 = MediaItem(owner_id=self.user4,
+                        media_file='./tests/test_pic.JPG').save()
     
     def test_mediaitems_rest(self):
         base_url = reverse('mediaItems')
@@ -51,13 +68,31 @@ class mediaItemsTest(TestCase):
                                     {'mediaitem': f})
         f.close()
         
-        #response 201 created location, mediaitem-id
+        #response 201 created, mediaitem-id
         self.assertContains(response,
                             "mediaitem-id",
                             status_code=201)
         
-        print response
         
+        #send another identical request and make sure the created location is different
+        f = open("%s%s" % (root, '/tests/test_pic.JPG'), 'rb')
+        
+        response2 = self.client.post("%s%s" % (base_url, "/user1/@self/@all"),
+                                    {'mediaitem': f})
+        f.close()
+        
+        #response 201 created location
+        self.assertContains(response2,
+                            "location",
+                            status_code=201)
+        
+        #the first response is different from the second
+        self.assertNotEquals(json.loads(response.content)['location'],
+                             json.loads(response2.content)['location'],
+                             "The file as overriden by two identical requests")
+        
+    def test_update_mediaitem(self):
+        pass
         
     
     def tearDown(self):

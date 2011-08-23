@@ -9,4 +9,5 @@ class MediaItem(models.Model):
     """
     owner_id = models.ForeignKey(User)
     media_file = models.FileField(upload_to='mediaitems')
+    created = models.DateTimeField(auto_now_add=True)
     
